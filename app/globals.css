@@ -1,0 +1,205 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #0284c7;
+  border-radius: 10px;
+  transition: background 0.3s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #0369a1;
+}
+
+/* Firefox */
+* {
+  scrollbar-color: #0284c7 #f1f5f9;
+  scrollbar-width: thin;
+}
+
+/* Smooth scroll behavior */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Selection color */
+::selection {
+  background-color: #0284c7;
+  color: white;
+}
+
+/* Focus styles for accessibility */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: 2px solid #0284c7;
+  outline-offset: 2px;
+}
+
+/* Remove focus outline for mouse users */
+button:focus:not(:focus-visible),
+a:focus:not(:focus-visible),
+input:focus:not(:focus-visible),
+textarea:focus:not(:focus-visible),
+select:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.6s ease-in-out;
+}
+
+.animate-slide-up {
+  animation: slideUp 0.6s ease-out;
+}
+
+.animate-slide-down {
+  animation: slideDown 0.6s ease-out;
+}
+
+/* Text utilities */
+.text-gradient {
+  @apply bg-gradient-to-r from-blue-900 via-blue-600 to-blue-400 bg-clip-text text-transparent;
+}
+
+.text-gradient-gold {
+  @apply bg-gradient-to-r from-yellow-500 via-yellow-600 to-orange-600 bg-clip-text text-transparent;
+}
+
+/* Container utilities */
+.container-max {
+  @apply max-w-6xl mx-auto px-4 sm:px-6 lg:px-8;
+}
+
+/* Button styles */
+.btn-primary {
+  @apply px-6 py-3 bg-gradient-to-r from-blue-900 to-blue-600 text-white rounded-full font-semibold hover:shadow-lg transition-all duration-300 hover:from-blue-800 hover:to-blue-500;
+}
+
+.btn-secondary {
+  @apply px-6 py-3 border-2 border-blue-600 text-blue-600 rounded-full font-semibold hover:bg-blue-50 dark:hover:bg-slate-800 transition-all duration-300;
+}
+
+.btn-outline {
+  @apply px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-lg font-medium hover:bg-slate-50 dark:hover:bg-slate-800 transition-all duration-300;
+}
+
+/* Badge styles */
+.badge {
+  @apply inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold bg-blue-100 dark:bg-slate-700 text-blue-900 dark:text-blue-300;
+}
+
+.badge-gold {
+  @apply inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold bg-yellow-100 dark:bg-slate-700 text-yellow-900 dark:text-yellow-300;
+}
+
+/* Section utilities */
+.section-title {
+  @apply text-4xl font-bold text-blue-900 dark:text-blue-300 mb-4;
+}
+
+.section-subtitle {
+  @apply text-lg text-slate-600 dark:text-slate-300 leading-relaxed;
+}
+
+/* Card styles */
+.card {
+  @apply bg-white dark:bg-slate-800 rounded-xl shadow-md hover:shadow-lg transition-all duration-300;
+}
+
+.card-gradient {
+  @apply bg-gradient-to-br from-blue-50 dark:from-slate-800 to-white dark:to-slate-900;
+}
+
+/* Divider */
+.divider {
+  @apply h-1 w-24 bg-gradient-to-r from-blue-900 to-blue-600 rounded-full;
+}
+
+/* Responsive typography */
+@media (max-width: 640px) {
+  h1 {
+    @apply text-3xl;
+  }
+  h2 {
+    @apply text-2xl;
+  }
+  h3 {
+    @apply text-xl;
+  }
+}
+
+/* Dark mode smooth transitions */
+* {
+  @apply transition-colors duration-300;
+}
+
+/* Hover effects */
+.hover-lift {
+  @apply hover:shadow-lg hover:scale-105 transition-all duration-300;
+}
+
+.hover-grow {
+  @apply hover:scale-110 transition-transform duration-300;
+}
+
+/* Prevent layout shift when scrollbar appears */
+html {
+  overflow-y: scroll;
+}
+
+/* Print styles */
+@media print {
+  body {
+    @apply bg-white text-black;
+  }
+  a {
+    @apply text-blue-600 underline;
+  }
+}
