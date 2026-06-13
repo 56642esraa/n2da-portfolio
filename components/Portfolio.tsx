@@ -4,39 +4,58 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Menu, X, Moon, Sun, ArrowUp, Briefcase, Code, Users, Award,
-  Github, Linkedin, Facebook, Mail, Phone, MapPin, ExternalLink,
+  Github, Linkedin, Facebook, Mail,twitter, Phone, MapPin, ExternalLink,
   ChevronDown, ChevronLeft, ChevronRight, Star,
   Calendar, FileText, Download, Send, CheckCircle, Clock,
   TrendingUp, Zap, MessageCircle, Sparkles, Shield, Lightbulb
 } from 'lucide-react';
 
 // Advanced Typing Effect Component
-const TypingEffect = ({ words, speed = 100 }) => {
+// Enhanced Typing Effect Component - shows one character at a time
+const TypingEffect = ({ words, speed = 100, delayBetweenWords = 1000 }) => {
   const [displayText, setDisplayText] = useState('');
   const [wordIndex, setWordIndex] = useState(0);
-  const [charIndex, setCharIndex] = useState(0);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
-    if (charIndex < words[wordIndex].length) {
-      const timeout = setTimeout(() => {
-        setDisplayText(prev => prev + words[wordIndex][charIndex]);
-        setCharIndex(charIndex + 1);
-      }, speed);
-      return () => clearTimeout(timeout);
-    } else {
-      const timeout = setTimeout(() => {
-        if (charIndex > 0) {
-          setDisplayText(prev => prev.slice(0, -1));
-          setCharIndex(charIndex - 1);
+    const currentWord = words[wordIndex];
+    
+    const timeout = setTimeout(() => {
+      if (!isDeleting) {
+        // Typing - add one character at a time
+        if (displayText.length < currentWord.length) {
+          setDisplayText(currentWord.substring(0, displayText.length + 1));
         } else {
+          // Finished typing, wait then start deleting
+          setTimeout(() => setIsDeleting(true), delayBetweenWords);
+        }
+      } else {
+        // Deleting - remove one character at a time
+        if (displayText.length > 0) {
+          setDisplayText(displayText.substring(0, displayText.length - 1));
+        } else {
+          // Finished deleting, move to next word
+          setIsDeleting(false);
           setWordIndex((wordIndex + 1) % words.length);
         }
-      }, 1000);
-      return () => clearTimeout(timeout);
-    }
-  }, [charIndex, wordIndex, words, speed]);
+      }
+    }, speed);
 
-  return <span>{displayText}</span>;
+    return () => clearTimeout(timeout);
+  }, [displayText, isDeleting, wordIndex, words, speed, delayBetweenWords]);
+
+  return (
+    <span className="inline-block">
+      {displayText}
+      <motion.span
+        animate={{ opacity: [1, 0, 1] }}
+        transition={{ duration: 0.8, repeat: Infinity }}
+        className="inline-block w-0.5 h-8 bg-blue-600 ml-1"
+      >
+        |
+      </motion.span>
+    </span>
+  );
 };
 
 // Advanced Counter Component
@@ -94,7 +113,8 @@ const GradientBorder = ({ children, className = '' }) => (
   </div>
 );
 
-const PortfolioPremiumPro = () => {
+
+const Portfolio = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
   const [language, setLanguage] = useState('en');
@@ -105,6 +125,7 @@ const PortfolioPremiumPro = () => {
   const [formData, setFormData] = useState({ name: '', email: '', message: '' });
   const [formStatus, setFormStatus] = useState('');
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  const [showBackToTop, setShowBackToTop] = useState(false); 
 
   // Mouse tracking for cursor effects
   useEffect(() => {
@@ -114,6 +135,41 @@ const PortfolioPremiumPro = () => {
     window.addEventListener('mousemove', handleMouseMove);
     return () => window.removeEventListener('mousemove', handleMouseMove);
   }, []);
+
+  // Add this AFTER your existing scroll useEffect
+useEffect(() => {
+  const handleScroll = () => {
+    setScrolled(window.scrollY > 50);
+    const scrollTop = window.scrollY;
+    const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+    const scrollPercent = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
+    setScrollProgress(scrollPercent);
+  };
+  window.addEventListener('scroll', handleScroll);
+  return () => window.removeEventListener('scroll', handleScroll);
+}, []);
+
+// 👇 ADD THIS NEW useEffect RIGHT HERE
+useEffect(() => {
+  const handleScroll = () => {
+    setShowBackToTop(window.scrollY > 500);
+  };
+  
+  window.addEventListener('scroll', handleScroll);
+  return () => window.removeEventListener('scroll', handleScroll);
+}, []);
+// 👆 ADD THIS NEW useEffect
+
+// Dark mode
+useEffect(() => {
+  if (darkMode) {
+    document.documentElement.classList.add('dark');
+    document.documentElement.style.colorScheme = 'dark';
+  } else {
+    document.documentElement.classList.remove('dark');
+    document.documentElement.style.colorScheme = 'light';
+  }
+}, [darkMode]);
 
   // Translations (same as before)
   const translations = {
@@ -687,136 +743,114 @@ const PortfolioPremiumPro = () => {
       />
 
       {/* Header with Vertical Navigation */}
-      <motion.header
-        initial={{ y: -100 }}
-        animate={{ y: 0 }}
-        transition={{ duration: 0.8, type: "spring", stiffness: 100 }}
-        className={`fixed top-0 left-0 right-0 z-40 transition-all duration-500 ${
-          scrolled
-            ? 'bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl shadow-2xl'
-            : 'bg-gradient-to-b from-white/50 to-transparent dark:from-slate-900/50'
-        }`}
+     <motion.header
+  initial={{ y: -100 }}
+  animate={{ y: 0 }}
+  transition={{ duration: 0.8, type: "spring", stiffness: 100 }}
+  className={`fixed top-0 left-0 right-0 z-40 transition-all duration-500 ${
+    scrolled
+      ? 'bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl shadow-2xl'
+      : 'bg-gradient-to-b from-white/50 to-transparent dark:from-slate-900/50'
+  }`}
+>
+  <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-4 md:py-5 lg:py-6">
+    <div className="flex items-center justify-between gap-3">
+      
+      {/* Logo */}
+      <motion.div
+        className="relative group flex-shrink-0"
+        whileHover={{ scale: 1.08 }}
+        transition={{ type: "spring", stiffness: 200 }}
       >
-        {scrolled && (
-          <motion.div
-            className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-600 via-purple-600 to-cyan-600"
-            initial={{ scaleX: 0 }}
-            animate={{ scaleX: 1 }}
-            transition={{ duration: 0.6 }}
-          />
-        )}
+        <motion.div
+          className="absolute -inset-2 bg-gradient-to-r from-blue-600 to-cyan-600 rounded-lg blur-lg opacity-0 group-hover:opacity-75 transition duration-500"
+          animate={{ rotate: 360 }}
+          transition={{ duration: 8, repeat: Infinity, linear: true }}
+        />
+        <h1 className="relative text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-black text-blue-600">
+          {language === 'ar' ? 'ندى' : 'Nada'}
+        </h1>
+      </motion.div>
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex justify-between items-center">
-          {/* Creative Logo */}
-          <motion.div
-            className="relative group"
-            whileHover={{ scale: 1.08 }}
-            transition={{ type: "spring", stiffness: 200 }}
+      {/* Desktop Navigation */}
+      <nav className="hidden lg:flex items-center gap-1 xl:gap-2">
+        {t.nav.slice(0, 6).map((item, idx) => (
+          <motion.button
+            key={item}
+            onClick={() => scrollToSection(idx === 0 ? 'home' : item.toLowerCase())}
+            className="relative text-sm xl:text-base font-bold px-3 xl:px-4 py-2 rounded-xl hover:text-blue-600 dark:hover:text-cyan-400 transition whitespace-nowrap"
+            whileHover={{ scale: 1.08, y: -2 }}
+            whileTap={{ scale: 0.95 }}
           >
+            {item}
             <motion.div
-              className="absolute -inset-2 bg-gradient-to-r from-blue-600 via-purple-600 to-cyan-600 rounded-lg blur-lg opacity-0 group-hover:opacity-75 transition duration-500"
-              animate={{ rotate: 360 }}
-              transition={{ duration: 8, repeat: Infinity, linear: true }}
+              className="absolute bottom-0 left-0 h-0.5 bg-gradient-to-r from-blue-600 to-cyan-600 rounded-full"
+              initial={{ width: 0 }}
+              whileHover={{ width: '100%' }}
+              transition={{ duration: 0.3 }}
             />
-            
-            <motion.div
-              className="relative text-7xl md:text-8xl font-black text-blue-600"
-              animate={{ 
-                backgroundPosition: ['0%', '100%', '0%'],
-              }}
-              transition={{ duration: 4, repeat: Infinity }}
-              style={{ backgroundSize: '200% 200%' }}
-            >
-              {language === 'ar' ? 'ندى' : 'Nada'}
-            </motion.div>
-          </motion.div>
+          </motion.button>
+        ))}
+      </nav>
 
-          {/* Horizontal Navigation Menu */}
-          <nav className="hidden md:flex items-center gap-2">
+      {/* Right Controls */}
+      <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
+        <motion.button
+          onClick={() => setDarkMode(!darkMode)}
+          className="p-2 sm:p-3 rounded-full bg-gradient-to-br from-slate-100 to-slate-50 dark:from-slate-800 dark:to-slate-900"
+          whileHover={{ scale: 1.15, rotate: 20 }}
+          whileTap={{ scale: 0.85 }}
+        >
+          {darkMode ? <Sun size={18} className="text-yellow-500 sm:w-5 sm:h-5" /> : <Moon size={18} className="text-blue-600 sm:w-5 sm:h-5" />}
+        </motion.button>
+
+        <motion.button
+          onClick={() => setLanguage(language === 'en' ? 'ar' : 'en')}
+          className="px-3 sm:px-4 md:px-5 py-1.5 sm:py-2 md:py-2.5 rounded-full bg-gradient-to-r from-blue-600 to-cyan-600 text-white text-xs sm:text-sm md:text-base font-bold"
+          whileHover={{ scale: 1.1, y: -2 }}
+          whileTap={{ scale: 0.92 }}
+        >
+          {language === 'en' ? 'AR' : 'EN'}
+        </motion.button>
+
+        <motion.button 
+          onClick={() => setIsMenuOpen(!isMenuOpen)} 
+          className="lg:hidden p-2 sm:p-3 rounded-lg bg-gradient-to-r from-slate-100 to-slate-50 dark:from-slate-800 dark:to-slate-900"
+        >
+          {isMenuOpen ? <X size={20} className="text-red-600" /> : <Menu size={20} className="text-blue-600" />}
+        </motion.button>
+      </div>
+    </div>
+
+    {/* Mobile Menu */}
+    <AnimatePresence>
+      {isMenuOpen && (
+        <motion.div
+          initial={{ opacity: 0, height: 0 }}
+          animate={{ opacity: 1, height: 'auto' }}
+          exit={{ opacity: 0, height: 0 }}
+          className="lg:hidden mt-3 pt-3 border-t border-blue-200 dark:border-slate-700"
+        >
+          <div className="flex flex-col gap-1 pb-2">
             {t.nav.map((item, idx) => (
               <motion.button
                 key={item}
-                onClick={() => scrollToSection(idx === 0 ? 'home' : item.toLowerCase())}
-                className="relative text-lg font-bold px-5 py-2 rounded-xl group overflow-hidden hover:text-blue-600 dark:hover:text-cyan-400 transition whitespace-nowrap"
-                whileHover={{ scale: 1.08, y: -3 }}
-                whileTap={{ scale: 0.95 }}
+                onClick={() => {
+                  scrollToSection(idx === 0 ? 'home' : item.toLowerCase());
+                  setIsMenuOpen(false);
+                }}
+                className="text-base sm:text-lg font-semibold px-3 py-2.5 rounded-lg text-left hover:bg-blue-50 dark:hover:bg-blue-900/20 transition"
+                whileTap={{ scale: 0.98 }}
               >
-                <motion.div
-                  className="absolute inset-0 bg-gradient-to-r from-blue-600/20 to-cyan-600/20 rounded-xl -z-10"
-                  initial={{ scaleX: 0 }}
-                  whileHover={{ scaleX: 1 }}
-                  transition={{ duration: 0.3 }}
-                />
                 {item}
-                <motion.div
-                  className="absolute bottom-0 left-0 h-1 bg-gradient-to-r from-blue-600 to-cyan-600 rounded-full"
-                  initial={{ width: 0 }}
-                  whileHover={{ width: '100%' }}
-                  transition={{ duration: 0.3 }}
-                />
               </motion.button>
             ))}
-          </nav>
-
-          {/* Right Controls */}
-          <div className="flex items-center gap-3">
-            <motion.button
-              onClick={() => setDarkMode(!darkMode)}
-              className="p-3 rounded-full bg-gradient-to-br from-slate-100 to-slate-50 dark:from-slate-800 dark:to-slate-900 hover:shadow-xl transition"
-              whileHover={{ scale: 1.15, rotate: 20 }}
-              whileTap={{ scale: 0.85 }}
-            >
-              {darkMode ? <Sun size={24} className="text-yellow-500" /> : <Moon size={24} className="text-blue-600" />}
-            </motion.button>
-
-            <motion.button
-              onClick={() => setLanguage(language === 'en' ? 'ar' : 'en')}
-              className="px-6 py-3 rounded-full bg-gradient-to-r from-blue-600 to-cyan-600 text-white text-lg font-bold hover:shadow-2xl transition"
-              whileHover={{ scale: 1.1, y: -2 }}
-              whileTap={{ scale: 0.92 }}
-            >
-              {language === 'en' ? 'AR' : 'EN'}
-            </motion.button>
-
-            <motion.button 
-              onClick={() => setIsMenuOpen(!isMenuOpen)} 
-              className="md:hidden p-3 rounded-lg bg-gradient-to-r from-slate-100 to-slate-50 dark:from-slate-800 dark:to-slate-900"
-              animate={{ rotate: isMenuOpen ? 90 : 0 }}
-              transition={{ duration: 0.3 }}
-            >
-              {isMenuOpen ? <X size={28} className="text-red-600" /> : <Menu size={28} className="text-blue-600" />}
-            </motion.button>
           </div>
-        </div>
-
-        {/* Mobile Menu */}
-        <AnimatePresence>
-          {isMenuOpen && (
-            <motion.div
-              initial={{ opacity: 0, height: 0, y: -20 }}
-              animate={{ opacity: 1, height: 'auto', y: 0 }}
-              exit={{ opacity: 0, height: 0, y: -20 }}
-              className="md:hidden bg-gradient-to-b from-white/90 to-white/70 dark:from-slate-900/90 dark:to-slate-900/70 backdrop-blur-xl border-t border-blue-200 dark:border-slate-700"
-            >
-              <div className="px-4 py-6 flex flex-col gap-3">
-                {t.nav.map((item, idx) => (
-                  <motion.button
-                    key={item}
-                    onClick={() => scrollToSection(idx === 0 ? 'home' : item.toLowerCase())}
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: idx * 0.05 }}
-                    className="text-2xl font-semibold px-6 py-3 rounded-lg text-left hover:bg-gradient-to-r hover:from-blue-600/20 hover:to-cyan-600/20 transition"
-                    whileHover={{ x: 10 }}
-                  >
-                    {item}
-                  </motion.button>
-                ))}
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </motion.header>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  </div>
+</motion.header>
 
       {/* HERO SECTION - Premium Design */}
       <motion.section
@@ -843,103 +877,222 @@ const PortfolioPremiumPro = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full relative z-10">
           <div className="grid md:grid-cols-2 gap-12 items-center">
             {/* Left Content */}
-            <motion.div
-              initial={{ opacity: 0, x: -50 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.2, duration: 0.8 }}
-            >
-              <motion.div
-                className="inline-block mb-6"
-                animate={{ y: [0, -10, 0] }}
-                transition={{ duration: 3, repeat: Infinity }}
-              >
-                <span className="text-blue-600 dark:text-blue-400 font-semibold text-lg">
-                  {t.hero.greeting}
-                </span>
-              </motion.div>
+           
+           <motion.div
+  initial={{ opacity: 0, x: -50 }}
+  animate={{ opacity: 1, x: 0 }}
+  transition={{ delay: 0.2, duration: 0.8, type: "spring", stiffness: 100 }}
+>
+  {/* Greeting - Bouncing */}
+  <motion.div
+    className="inline-block mb-6"
+    animate={{ 
+      y: [0, -10, 0, -5, 0],
+      scale: [1, 1.05, 1, 1.02, 1]
+    }}
+    transition={{ 
+      duration: 3, 
+      repeat: Infinity,
+      ease: "easeInOut"
+    }}
+  >
+    <motion.span 
+      className="text-blue-600 dark:text-blue-400 font-semibold text-lg inline-block"
+      whileHover={{ 
+        scale: 1.1,
+        textShadow: "0px 0px 8px rgba(37, 99, 235, 0.5)"
+      }}
+    >
+      {t.hero.greeting}
+    </motion.span>
+  </motion.div>
 
-              <motion.h1
-                className="text-6xl md:text-7xl font-black mb-6 leading-tight"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.3, duration: 0.8 }}
-              >
-                {t.hero.name}
-              </motion.h1>
+  {/* Name - Floating with gradient shimmer */}
+  <motion.h1
+    className="text-6xl md:text-7xl font-black mb-6 leading-tight"
+    initial={{ opacity: 0, y: 50, scale: 0.8 }}
+    animate={{ 
+      opacity: 1, 
+      y: [0, -8, 0, 8, 0],
+      scale: 1
+    }}
+    transition={{ 
+      delay: 0.3, 
+      duration: 0.8,
+      y: {
+        duration: 4,
+        repeat: Infinity,
+        ease: "easeInOut"
+      }
+    }}
+    whileHover={{ scale: 1.02 }}
+  >
+    <motion.span
+      className="bg-gradient-to-r from-blue-600 via-purple-600 to-cyan-600 bg-clip-text text-transparent inline-block"
+      animate={{
+        backgroundPosition: ["0%", "100%", "0%"],
+      }}
+      transition={{
+        duration: 5,
+        repeat: Infinity,
+        ease: "linear"
+      }}
+      style={{ backgroundSize: "200% 100%" }}
+    >
+      {t.hero.name}
+    </motion.span>
+  </motion.h1>
 
-              <motion.div
-                className="text-3xl md:text-4xl font-bold mb-6 h-20 text-blue-600 dark:text-blue-400"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.4 }}
-              >
-                <TypingEffect words={t.hero.roles} speed={50} />
-              </motion.div>
+  {/* Role - Pulsing with scale */}
+  <motion.div
+    className="text-3xl md:text-4xl font-bold mb-6 h-20 text-blue-600 dark:text-blue-400"
+    initial={{ opacity: 0, x: -100 }}
+    animate={{ 
+      opacity: 1, 
+      x: 0,
+    }}
+    transition={{ delay: 0.4, duration: 0.6, type: "spring" }}
+  >
+    <motion.span
+      className="inline-block"
+      animate={{ 
+        scale: [1, 1.08, 1],
+        textShadow: [
+          "0px 0px 0px rgba(37, 99, 235, 0)",
+          "0px 0px 15px rgba(37, 99, 235, 0.5)",
+          "0px 0px 0px rgba(37, 99, 235, 0)"
+        ]
+      }}
+      transition={{ 
+        duration: 2.5,
+        repeat: Infinity,
+        ease: "easeInOut"
+      }}
+    >
+      <TypingEffect words={t.hero.roles} speed={50} />
+    </motion.span>
+  </motion.div>
 
-              <motion.p
-                className="text-xl text-slate-600 dark:text-slate-300 mb-8 leading-relaxed"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.5 }}
-              >
-                {t.hero.description}
-              </motion.p>
+  {/* Description - Fade with slide */}
+  <motion.p
+    className="text-xl text-slate-600 dark:text-slate-300 mb-8 leading-relaxed"
+    initial={{ opacity: 0, y: 30 }}
+    animate={{ 
+      opacity: 1, 
+      y: 0,
+    }}
+    transition={{ delay: 0.5, duration: 0.6 }}
+    whileHover={{ scale: 1.01 }}
+  >
+    {t.hero.description}
+  </motion.p>
 
-              {/* CTA Buttons */}
-              <motion.div
-                className="flex gap-4 flex-wrap mb-8"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.6 }}
-              >
-                <motion.button
-                  onClick={() => scrollToSection('contact')}
-                  whileHover={{ scale: 1.08, y: -3 }}
-                  whileTap={{ scale: 0.95 }}
-                  className="px-8 py-4 bg-gradient-to-r from-blue-600 via-purple-600 to-cyan-600 text-white rounded-full font-bold hover:shadow-2xl transition text-lg"
-                >
-                  {t.hero.cta1}
-                </motion.button>
-                <motion.button
-                  onClick={() => scrollToSection('about')}
-                  whileHover={{ scale: 1.08, y: -3 }}
-                  whileTap={{ scale: 0.95 }}
-                  className="px-8 py-4 border-2 border-blue-600 text-blue-600 dark:text-blue-400 rounded-full font-bold hover:bg-blue-600/10 transition text-lg"
-                >
-                  {t.hero.cta2}
-                </motion.button>
-              </motion.div>
+  {/* CTA Buttons */}
+  <motion.div
+    className="flex gap-4 flex-wrap mb-8"
+    initial={{ opacity: 0, y: 30 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ delay: 0.6, duration: 0.6 }}
+  >
+    <motion.button
+      onClick={() => scrollToSection('contact')}
+      whileHover={{ 
+        scale: 1.08, 
+        y: -5,
+        boxShadow: "0 20px 40px rgba(37, 99, 235, 0.5)"
+      }}
+      whileTap={{ scale: 0.95 }}
+      animate={{
+        boxShadow: [
+          "0 0px 0px rgba(37, 99, 235, 0)",
+          "0 0px 20px rgba(37, 99, 235, 0.3)",
+          "0 0px 0px rgba(37, 99, 235, 0)"
+        ]
+      }}
+      transition={{
+        duration: 2,
+        repeat: Infinity,
+        ease: "easeInOut"
+      }}
+      className="px-8 py-4 bg-gradient-to-r from-blue-600 via-purple-600 to-cyan-600 text-white rounded-full font-bold hover:shadow-2xl transition text-lg"
+    >
+      <motion.span
+        animate={{ x: [0, 5, 0] }}
+        transition={{ duration: 1.5, repeat: Infinity, delay: 1 }}
+        className="inline-block"
+      >
+        {t.hero.cta1}
+      </motion.span>
+    </motion.button>
+    
+    <motion.button
+      onClick={() => scrollToSection('about')}
+      whileHover={{ 
+        scale: 1.08, 
+        y: -5,
+        backgroundColor: "rgba(37, 99, 235, 0.15)"
+      }}
+      whileTap={{ scale: 0.95 }}
+      className="px-8 py-4 border-2 border-blue-600 text-blue-600 dark:text-blue-400 rounded-full font-bold hover:shadow-2xl transition text-lg"
+    >
+      <motion.span
+        animate={{ x: [0, -5, 0] }}
+        transition={{ duration: 1.5, repeat: Infinity, delay: 1.2 }}
+        className="inline-block"
+      >
+        {t.hero.cta2}
+      </motion.span>
+    </motion.button>
+  </motion.div>
 
-              {/* Social Icons */}
-              <motion.div
-                className="flex gap-4"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.7 }}
-              >
-                {[
-                  { icon: Linkedin, url: 'https://linkedin.com/in/nada-mohamed-4b11a61b2', label: 'LinkedIn' },
-                  { icon: Facebook, url: 'https://facebook.com/nada.mohammed.98031', label: 'Facebook' },
-                  { icon: Mail, url: 'mailto:nadaiti2021@gmail.com', label: 'Email' },
-                  { icon: MessageCircle, url: 'https://wa.me/201000912100', label: 'WhatsApp' }
-                ].map((social, idx) => (
-                  <motion.a
-                    key={idx}
-                    href={social.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="w-14 h-14 rounded-full bg-gradient-to-r from-blue-600 to-cyan-600 flex items-center justify-center text-white hover:shadow-xl transition"
-                    whileHover={{ scale: 1.2, y: -8 }}
-                    whileTap={{ scale: 0.9 }}
-                    title={social.label}
-                  >
-                    <social.icon size={24} />
-                  </motion.a>
-                ))}
-              </motion.div>
-            </motion.div>
+  {/* Social Icons */}
+  <motion.div
+    className="flex gap-4"
+    initial={{ opacity: 0 }}
+    animate={{ opacity: 1 }}
+    transition={{ delay: 0.7, duration: 0.5 }}
+  >
+    {[
+      { icon: Linkedin, url: 'https://linkedin.com/in/nada-mohamed-4b11a61b2', label: 'LinkedIn' },
+      { icon: Facebook, url: 'https://facebook.com/nada.mohammed.98031', label: 'Facebook' },
+      { icon: Mail, url: 'mailto:nadaiti2021@gmail.com', label: 'Email' },
+      { icon: MessageCircle, url: 'https://wa.me/201000912100', label: 'WhatsApp' }
+    ].map((social, idx) => (
+      <motion.a
+        key={idx}
+        href={social.url}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="w-14 h-14 rounded-full bg-gradient-to-r from-blue-600 to-cyan-600 flex items-center justify-center text-white hover:shadow-xl transition"
+        whileHover={{ 
+          scale: 1.2, 
+          y: -8,
+          rotate: 360,
+          transition: { duration: 0.3 }
+        }}
+        whileTap={{ scale: 0.9 }}
+        title={social.label}
+        initial={{ opacity: 0, scale: 0 }}
+        animate={{ 
+          opacity: 1, 
+          scale: 1,
+          transition: { delay: 0.7 + idx * 0.1, type: "spring" }
+        }}
+      >
+        <motion.div
+          whileHover={{ rotate: 360 }}
+          transition={{ duration: 0.3 }}
+        >
+          <social.icon size={24} />
+        </motion.div>
+      </motion.a>
+    ))}
+  </motion.div>
+</motion.div>
 
             {/* Right - Avatar */}
+
+                        {/* Right - Professional Image */}
             <motion.div
               initial={{ opacity: 0, x: 50 }}
               animate={{ opacity: 1, x: 0 }}
@@ -952,22 +1105,22 @@ const PortfolioPremiumPro = () => {
                 className="relative w-full aspect-square rounded-3xl overflow-hidden shadow-2xl"
               >
                 <div className="absolute inset-0 bg-gradient-to-br from-blue-600 to-cyan-600 opacity-10" />
-                <div className="w-full h-full bg-gradient-to-br from-blue-100 to-cyan-100 dark:from-slate-800 dark:to-slate-700 flex items-center justify-center">
-                  <div className="text-center">
-                    <motion.div
-                      className="text-8xl mb-4"
-                      animate={{ scale: [1, 1.1, 1] }}
-                      transition={{ duration: 3, repeat: Infinity }}
-                    >
-                      👩‍💼
-                    </motion.div>
-                    <p className="text-slate-600 dark:text-slate-300 font-semibold">Professional</p>
-                  </div>
-                </div>
+                <img
+                  src="/images/nada-professional.png"
+                  alt="Nada Mohamed Professional"
+                  className="w-full h-full object-cover object-center"
+                  onError={(e) => {
+                    e.target.onerror = null;
+                    e.target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E👩%3C/text%3E%3C/svg%3E";
+                  }}
+                />
               </motion.div>
             </motion.div>
           </div>
         </div>
+
+
+      
 
         {/* Scroll Down Indicator */}
         <motion.div
@@ -1541,21 +1694,39 @@ const PortfolioPremiumPro = () => {
         </div>
       </motion.section>
 
-      {/* Footer */}
-      <footer className="bg-slate-900 dark:bg-black text-white py-12 border-t border-slate-800">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center flex-wrap gap-6">
-            <motion.p className="text-slate-400 text-sm">
-              {t.footer}
-            </motion.p>
-            <motion.button
-              onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-              className="p-3 rounded-full bg-gradient-to-r from-blue-600 to-cyan-600 hover:shadow-xl transition"
-              whileHover={{ scale: 1.15, y: -5 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              <ArrowUp size={24} />
-            </motion.button>
+
+        {/* Back to Top */}
+      <AnimatePresence>
+        {showBackToTop && (
+          <motion.button
+            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+            className="fixed bottom-12 right-12 bg-gradient-to-r from-blue-600 to-cyan-600 text-white p-6 rounded-full shadow-2xl z-40 border-3 border-blue-300"
+            initial={{ opacity: 0, scale: 0 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0 }}
+            whileHover={{ scale: 1.3, y: -10, boxShadow: '0 40px 80px rgba(37, 99, 235, 0.7)' }}
+            whileTap={{ scale: 0.85 }}
+          >
+            <ArrowUp className="w-8 h-8" />
+          </motion.button>
+        )}
+      </AnimatePresence>
+
+   {/* FOOTER */}
+      <footer className="border-t border-slate-200 dark:border-slate-800 py-10 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-6">
+          <p className="text-sm text-slate-500 dark:text-slate-400">&copy; {new Date().getFullYear()} Alex Carter. All rights reserved.</p>
+          <div className="flex gap-3">
+            {[Github, Linkedin, Mail].map((Icon, idx) => (
+              <a
+                key={idx}
+                href="#"
+                aria-label="Social media link"
+                className="w-10 h-10 rounded-full border border-slate-200 dark:border-slate-700 flex items-center justify-center text-slate-500 dark:text-slate-400 hover:bg-blue-600 hover:text-white hover:border-blue-600 hover:-translate-y-1 transition-all duration-300"
+              >
+                <Icon size={18} />
+              </a>
+            ))}
           </div>
         </div>
       </footer>
@@ -1563,4 +1734,5 @@ const PortfolioPremiumPro = () => {
   );
 };
 
-export default PortfolioPremiumPro;
+
+export default Portfolio;
